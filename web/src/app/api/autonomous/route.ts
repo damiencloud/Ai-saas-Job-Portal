@@ -43,14 +43,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "applyUrl, company, and role are required" }, { status: 400 });
     }
 
-    // Dynamic import of AutonomousRunner using static relative specifiers
-    // @ts-ignore
-    const { AutonomousRunner } = await import("../../../../../lib/engine/AutonomousRunner.mjs");
-    // @ts-ignore
-    const { ApplicationModeConfig } = await import("../../../../../lib/domain/ApplicationMode.mjs");
-
-    const modeConfig = new ApplicationModeConfig({ mode: mode || "autonomous", minScoreThreshold: score || 4.5 });
-    const runner = new AutonomousRunner({ modeConfig, providersDir: path.join(root, "providers") });
+    const root = careerOpsRoot();
+    let AutonomousRunner: any;
+    let ApplicationModeConfig: any;
+    try {
+      const runnerMod = eval('require')(path.join(root, 'lib', 'engine', 'AutonomousRunner.mjs'));
+      const modeMod = eval('require')(path.join(root, 'lib', 'domain', 'ApplicationMode.mjs'));
+      AutonomousRunner = runnerMod.AutonomousRunner;
+      ApplicationModeConfig = modeMod.ApplicationModeConfig;
+    } catch {
+      return NextResponse.json({ ok: false, message: "Autonomous runner is available in CLI execution mode." });
+    }
 
     // Dummy sample profile (reads from config/profile.yml if available)
     const profile = { first_name: "Candidate", email: "candidate@example.com" };
