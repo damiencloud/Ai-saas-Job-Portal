@@ -50,7 +50,7 @@
     "prepare:application": "node prepare-application.mjs",
     "build:dashboard": "node build-dashboard.mjs",
     "serve:dashboard": "cd dashboard && go run . --path ..",
-    "postinstall": "npx playwright install chromium --with-deps || npx playwright install chromium --with-deps",
+    "postinstall": "if [ \"$VERCEL\" != \"1\" ]; then npx playwright install chromium 2>/dev/null || true; fi",
     "manifesto": "node manifesto.mjs"
   },
   "keywords": [
