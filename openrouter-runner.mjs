@@ -22,7 +22,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import readline from 'node:readline';
-import yaml from 'js-yaml';
 import { outputLanguageInstruction, parseOutputLanguage } from './profile-language.mjs';
 import {
   formatReportNumber, releaseReportNumbers, reserveReportNumbers,
@@ -448,10 +447,25 @@ function normKeywords(v) {
   return v.map(x => String(x ?? '').toLowerCase().trim()).filter(Boolean);
 }
 
-export function parsePortals(rawOverride) {
+let yamlModule = null;
+async function parseYaml(raw) {
+  if (!yamlModule) {
+    try {
+      yamlModule = (await import('js-yaml')).default;
+    } catch {
+      yamlModule = null;
+    }
+  }
+  if (yamlModule && typeof yamlModule.load === 'function') {
+    return yamlModule.load(raw) || {};
+  }
+  return {};
+}
+
+export async function parsePortals(rawOverride) {
   const raw = rawOverride ?? readFile('portals.yml');
   if (!raw) throw new Error('portals.yml not found');
-  const config = yaml.load(raw) || {};
+  const config = await parseYaml(raw);
 
   const tf = config.title_filter || {};
   const positive = normKeywords(tf.positive);
@@ -564,7 +578,7 @@ async function cmdScan() {
   console.log('Scanning Greenhouse portals...\n');
 
   let portals;
-  try { portals = parsePortals(); }
+  try { portals = await parsePortals(); }
   catch (e) { console.error(e.message); return; }
 
   const { companies, titleMatches } = portals;
