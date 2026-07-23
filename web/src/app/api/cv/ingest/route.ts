@@ -12,7 +12,7 @@ import { careerOpsRoot } from "@/lib/career-ops";
 // via the existing POST /api/cv after the user confirms (propose-then-confirm).
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 // Prefer the CANONICAL core mode (single source of truth — CLI + web parse CVs
 // identically); fall back to the inline prompt until modes/cv-ingest.md lands

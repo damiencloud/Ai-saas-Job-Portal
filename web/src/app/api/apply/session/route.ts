@@ -2,7 +2,7 @@ import { openSession } from "@/lib/apply/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 300; // the agentic drive + interpretation fallbacks spawn a planner
+export const maxDuration = 60;
 
 // Open a persistent apply session: headed-but-off-screen Chrome opens the real
 // form, we extract + tag its fields. The session stays open for fill + handoff.

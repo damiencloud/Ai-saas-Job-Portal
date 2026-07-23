@@ -7,7 +7,7 @@ import { parseExplorePatch, DEFAULT_FILTERS, type DiscoveredOffer, type ScanEven
 // Discovery is HTTP-bound across many ATS boards; give it room. It is FREE —
 // zero LLM tokens (the scanner only does HTTP + JSON, and --dry-run writes nothing).
 export const runtime = "nodejs";
-export const maxDuration = 300;
+export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {

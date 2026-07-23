@@ -4,7 +4,7 @@ import { classifyEmpty } from "@/lib/apply/diagnose";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 // Streamed agentic drive over an OPEN session: the AI drives the headed page to
 // REACH a fillable application form (the user watches each step live), then we

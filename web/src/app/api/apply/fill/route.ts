@@ -4,7 +4,7 @@ import type { ApplyField } from "@/lib/apply/extract";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 // Fill the real form behind the scenes (headed-but-off-screen), screenshotting
 // each step for the "behind the scenes" strip, then bring the window to the front

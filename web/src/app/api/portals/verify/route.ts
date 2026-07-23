@@ -5,7 +5,7 @@ import { careerOpsRoot, rootScript } from "@/lib/career-ops";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 // Orchestrates the core's verify-portals.mjs (#1016) — the SAME ATS-slug
 // validator the CLI uses. Catches the silent 404s that quietly drop a company
