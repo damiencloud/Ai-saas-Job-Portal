@@ -783,6 +783,22 @@ async function cmdApply(ref, ctx) {
   console.log('\n─────────────────────────────────────────────────────\n');
 }
 
+// -- PROMPT (headless prompt execution for web app) --
+async function cmdPrompt(userMessage, systemPromptOverride) {
+  tracker.recordZeroToken('scan');
+  tracker.recordZeroToken('pdf payload');
+  const sys = systemPromptOverride || "You are a helpful assistant.";
+  let resultObj;
+  try {
+    resultObj = await callOpenRouter(sys, userMessage);
+  } catch (e) {
+    console.error(`OpenRouter error: ${e.message}`);
+    return;
+  }
+  tracker.record('prompt', resultObj.usage);
+  console.log(resultObj.content);
+}
+
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
@@ -794,7 +810,7 @@ const [,, command, ...args] = invokedDirectly ? process.argv : [];
 const ctx = invokedDirectly ? loadContext() : null;
 
 // Load free models list before running any AI command (skip when a model is pinned)
-if (invokedDirectly && ['evaluate', 'eval', 'pipeline', 'apply', 'models'].includes(command) && !process.env.CAREER_OPS_MODEL) {
+if (invokedDirectly && ['evaluate', 'eval', 'pipeline', 'apply', 'models', 'prompt'].includes(command) && !process.env.CAREER_OPS_MODEL) {
   await loadFreeModels();
 }
 
@@ -815,6 +831,11 @@ if (invokedDirectly) switch (command) {
   case 'apply':
     if (!args[0]) { console.error('Usage: node openrouter-runner.mjs apply <report_num|report_path>'); break; }
     await cmdApply(args[0], ctx);
+    break;
+
+  case 'prompt':
+    if (!args[0]) { console.error('Usage: node openrouter-runner.mjs prompt <user_message> [system_prompt]'); break; }
+    await cmdPrompt(args[0], args[1]);
     break;
 
   case 'models':

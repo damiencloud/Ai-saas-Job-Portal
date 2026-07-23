@@ -158,9 +158,9 @@ export function AssistantConsole() {
     function read() {
       try {
         const raw = localStorage.getItem(CONFIG_KEY);
-        setCliId(raw ? JSON.parse(raw).cliId || null : null);
+        setCliId(raw ? JSON.parse(raw).cliId || "openrouter" : "openrouter");
       } catch {
-        setCliId(null);
+        setCliId("openrouter");
       }
     }
     read();
