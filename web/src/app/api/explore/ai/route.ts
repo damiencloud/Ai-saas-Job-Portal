@@ -48,7 +48,7 @@ export async function POST(req: Request) {
   try {
     mode = fs.readFileSync(path.join(careerOpsRoot(), "modes", "discover.md"), "utf8");
   } catch {
-    return Response.json({ code: "MODE_MISSING", error: "AI search needs a newer career-ops — update to enable it." }, { status: 400 });
+    mode = `# AI Job Discovery Mode -- System Prompt\nYou are an automated job discovery engine. Search for active job postings matching the user's criteria. Emit each candidate offer in the format: <<offer:{"url":"...","title":"...","company":"...","location":"...","source":"ai-search","why":"...","postedHint":"recent","ats":"greenhouse","verification":"unconfirmed"}>>`;
   }
 
   const { lines } = assembleDedupContext();

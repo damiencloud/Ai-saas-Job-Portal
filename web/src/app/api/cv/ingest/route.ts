@@ -2,6 +2,10 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import * as pdfParseModule from "pdf-parse";
+import mammoth from "mammoth";
+
+const pdfParse = ((pdfParseModule as any).default || pdfParseModule) as (buf: Buffer) => Promise<{ text: string }>;
 import { resolveCli } from "@/lib/clis";
 import { careerOpsRoot } from "@/lib/career-ops";
 
@@ -75,16 +79,38 @@ export async function POST(req: Request) {
       cliId = String(form.get("cliId") || "");
       const file = form.get("file");
       if (!(file instanceof File)) return Response.json({ error: "no file" }, { status: 400 });
-      // Reading a PDF/DOCX from a path needs the CLI's file tool, which only Claude
-      // is granted here. Tell non-Claude users plainly instead of failing opaquely.
-      if (cliId !== "claude" && /\.(pdf|docx)$/i.test(file.name)) {
-        return Response.json({ error: "PDF upload needs Claude Code — paste your CV text instead." }, { status: 400 });
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      let extractedText = "";
+
+      if (/\.pdf$/i.test(file.name)) {
+        try {
+          const parsed = await pdfParse(buffer);
+          extractedText = parsed.text || "";
+        } catch {
+          /* failover below */
+        }
+      } else if (/\.docx$/i.test(file.name)) {
+        try {
+          const parsed = await mammoth.extractRawText({ buffer });
+          extractedText = parsed.value || "";
+        } catch {
+          /* failover below */
+        }
+      } else if (/\.(txt|md|markdown)$/i.test(file.name)) {
+        extractedText = buffer.toString("utf8");
       }
-      const ext = (file.name.match(/\.[a-z0-9]+$/i)?.[0] || ".pdf").toLowerCase();
-      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "career-ops-cv-"));
-      tempFile = path.join(dir, `cv${ext}`); // outside the repo, basename-only
-      fs.writeFileSync(tempFile, Buffer.from(await file.arrayBuffer()), { mode: 0o600 }); // PII → owner-only
-      promptSource = FILE_SRC(tempFile);
+
+      if (extractedText.trim()) {
+        promptSource = TEXT_SRC(extractedText.trim());
+      } else {
+        // Fallback for Claude Code or tool-based file reading
+        const ext = (file.name.match(/\.[a-z0-9]+$/i)?.[0] || ".pdf").toLowerCase();
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), "career-ops-cv-"));
+        tempFile = path.join(dir, `cv${ext}`);
+        fs.writeFileSync(tempFile, buffer, { mode: 0o600 });
+        promptSource = FILE_SRC(tempFile);
+      }
     } else {
       return Response.json({ error: "unsupported content-type" }, { status: 400 });
     }
