@@ -43,10 +43,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "applyUrl, company, and role are required" }, { status: 400 });
     }
 
-    // Dynamic import of AutonomousRunner
-    const root = careerOpsRoot();
-    const { AutonomousRunner } = await import(path.join(root, "lib", "engine", "AutonomousRunner.mjs"));
-    const { ApplicationModeConfig } = await import(path.join(root, "lib", "domain", "ApplicationMode.mjs"));
+    // Dynamic import of AutonomousRunner using static relative specifiers
+    // @ts-ignore
+    const { AutonomousRunner } = await import("../../../../../lib/engine/AutonomousRunner.mjs");
+    // @ts-ignore
+    const { ApplicationModeConfig } = await import("../../../../../lib/domain/ApplicationMode.mjs");
 
     const modeConfig = new ApplicationModeConfig({ mode: mode || "autonomous", minScoreThreshold: score || 4.5 });
     const runner = new AutonomousRunner({ modeConfig, providersDir: path.join(root, "providers") });
