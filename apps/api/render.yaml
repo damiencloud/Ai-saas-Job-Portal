@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: ai-saas-job-portal-api
+    env: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    plan: free
+    region: singapore
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash
