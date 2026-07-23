@@ -119,3 +119,9 @@ plan/
 
 # Web
 .career-ops-web/logo-cache/
+data/sessions/
+data/screenshots/
+data/audit-log.tsv
+data/queue.json
+data/test-*.json
+test-payload.json

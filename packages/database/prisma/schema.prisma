@@ -1,0 +1,166 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ApplicationMode {
+  MANUAL
+  ASSISTED
+  AUTONOMOUS
+}
+
+enum ApplicationStatus {
+  DISCOVERED
+  EVALUATED
+  READY_TO_APPLY
+  APPLIED
+  INTERVIEW
+  OFFER
+  REJECTED
+  PAUSED_HITL
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String?
+  avatarUrl     String?
+  role          Role           @default(USER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  profile       Profile?
+  resumes       Resume[]
+  coverLetters  CoverLetter[]
+  applications  Application[]
+  savedJobs     SavedJob[]
+  apiKeys       ApiKey[]
+}
+
+model Profile {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone               String?
+  location            String?
+  linkedin            String?
+  github              String?
+  targetRoles         String[]
+  targetLocations     String[]
+  minSalary           Int?
+  rawCvMarkdown       String?  @db.Text
+  cvFactsJson         Json?
+  mode                ApplicationMode @default(ASSISTED)
+  minScoreThreshold   Float    @default(4.0)
+  autoSubmitEnabled   Boolean  @default(false)
+}
+
+model Company {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  domain       String?
+  careersUrl   String
+  atsType      String?  
+  jobs         Job[]
+}
+
+model Job {
+  id           String        @id @default(uuid())
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id])
+  title        String
+  applyUrl     String        @unique
+  location     String?
+  description  String?       @db.Text
+  simhash      String?
+  matchScore   Float?
+  skillGap     String[]
+  postedAt     DateTime?
+  createdAt    DateTime      @default(now())
+
+  applications Application[]
+  savedJobs    SavedJob[]
+}
+
+model Resume {
+  id           String        @id @default(uuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  pdfStorageUrl String
+  contentHtml  String?       @db.Text
+  isPrimary    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+
+  applications Application[]
+}
+
+model CoverLetter {
+  id           String        @id @default(uuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleTitle    String
+  companyName  String
+  bodyText     String        @db.Text
+  pdfStorageUrl String?
+  createdAt    DateTime      @default(now())
+
+  applications Application[]
+}
+
+model Application {
+  id              String            @id @default(uuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId           String
+  job             Job               @relation(fields: [jobId], references: [id])
+  resumeId        String?
+  resume          Resume?           @relation(fields: [resumeId], references: [id])
+  coverLetterId   String?
+  coverLetter     CoverLetter?      @relation(fields: [coverLetterId], references: [id])
+  status          ApplicationStatus @default(DISCOVERED)
+  mode            ApplicationMode   @default(ASSISTED)
+  sessionDumpUrl  String?
+  screenshotUrl   String?
+  appliedAt       DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  events          ApplicationEvent[]
+}
+
+model ApplicationEvent {
+  id            String      @id @default(uuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  eventType     String      
+  details       String?     @db.Text
+  timestamp     DateTime    @default(now())
+}
+
+model SavedJob {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  keyHash   String   @unique
+  name      String
+  createdAt DateTime @default(now())
+}

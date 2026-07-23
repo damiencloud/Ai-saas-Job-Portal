@@ -24,25 +24,40 @@ import { pathToFileURL } from 'url';
 export async function loadProviders(dir) {
   const providers = new Map();
   if (!existsSync(dir)) return providers;
-  const entries = readdirSync(dir)
-    .filter(f => f.endsWith('.mjs') && !f.startsWith('_'))
-    .sort();
-  for (const file of entries) {
-    const full = path.join(dir, file);
+  const items = readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name));
+
+  for (const item of items) {
+    let fullPath = null;
+    let displayName = item.name;
+
+    if (item.isFile() && item.name.endsWith('.mjs') && !item.name.startsWith('_')) {
+      fullPath = path.join(dir, item.name);
+    } else if (item.isDirectory() && !item.name.startsWith('_') && !item.name.startsWith('.')) {
+      const indexFile = path.join(dir, item.name, 'index.mjs');
+      const namedFile = path.join(dir, item.name, `${item.name}.mjs`);
+      if (existsSync(indexFile)) {
+        fullPath = indexFile;
+      } else if (existsSync(namedFile)) {
+        fullPath = namedFile;
+      }
+    }
+
+    if (!fullPath) continue;
+
     let mod;
     try {
-      mod = await import(pathToFileURL(full).href);
+      mod = await import(pathToFileURL(fullPath).href);
     } catch (err) {
-      console.error(`⚠️  ${file}: failed to load — ${err.message}`);
+      console.error(`⚠️  ${displayName}: failed to load — ${err.message}`);
       continue;
     }
     const p = mod.default;
     if (!p || typeof p.fetch !== 'function' || !p.id) {
-      console.error(`⚠️  ${file}: skipping — default export must be { id, fetch }`);
+      console.error(`⚠️  ${displayName}: skipping — default export must be { id, fetch }`);
       continue;
     }
     if (providers.has(p.id)) {
-      console.error(`⚠️  ${file}: duplicate provider id "${p.id}" — keeping first`);
+      console.error(`⚠️  ${displayName}: duplicate provider id "${p.id}" — keeping first`);
       continue;
     }
     providers.set(p.id, p);

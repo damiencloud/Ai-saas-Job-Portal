@@ -1,0 +1,32 @@
+name: Autonomous Career Agent CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x, 24.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run Enterprise Autonomous Engine Unit Tests
+        run: node --test tests/autonomous-engine.test.mjs tests/ai-enhancer.test.mjs tests/analytics-engine.test.mjs tests/job-queue.test.mjs tests/vault-security.test.mjs tests/autonomous-scheduler.test.mjs tests/cover-letter-engine.test.mjs tests/learning-engine.test.mjs
