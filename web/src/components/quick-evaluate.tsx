@@ -14,10 +14,15 @@ export function QuickEvaluate() {
   const [hint, setHint] = useState("");
 
   function run() {
-    const u = url.trim();
+    let u = url.trim();
+    if (!u) return;
     if (!/^https?:\/\//i.test(u)) {
-      setHint("Paste a full job-posting URL (https://…).");
-      return;
+      if (/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(u)) {
+        u = `https://${u}`;
+      } else {
+        setHint("Paste a full job-posting URL (https://…).");
+        return;
+      }
     }
     startJob({ title: "Evaluate · pasted URL", subtitle: u, kind: "evaluate", input: u, page: "/" });
     setUrl("");

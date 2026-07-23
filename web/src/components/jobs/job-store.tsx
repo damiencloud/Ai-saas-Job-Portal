@@ -73,6 +73,24 @@ export function JobsProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* ignore */
     }
+    try {
+      const rawCfg = localStorage.getItem(CONFIG_KEY);
+      const cfg = rawCfg ? JSON.parse(rawCfg) : {};
+      if (!cfg.cliId) {
+        fetch("/api/clis")
+          .then((r) => r.json())
+          .then((d) => {
+            const list = d.clis ?? [];
+            const first = list.find((c: { installed: boolean; id: string }) => c.installed)?.id;
+            if (first) {
+              localStorage.setItem(CONFIG_KEY, JSON.stringify({ ...cfg, mode: "cli", cliId: first }));
+            }
+          })
+          .catch(() => {});
+      }
+    } catch {
+      /* ignore */
+    }
     loaded.current = true;
   }, []);
 

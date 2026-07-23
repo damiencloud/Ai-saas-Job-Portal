@@ -66,8 +66,22 @@ export function ConfigForm() {
       .then((d) => {
         const list: Cli[] = d.clis ?? [];
         setClis(list);
-        // auto-select first installed if nothing chosen yet
-        setCliId((prev) => prev || list.find((c) => c.installed)?.id || "");
+        const firstInstalled = list.find((c) => c.installed)?.id || "";
+        setCliId((prev) => {
+          const next = prev || firstInstalled;
+          if (next) {
+            try {
+              const raw = localStorage.getItem(STORAGE_KEY);
+              const v = raw ? JSON.parse(raw) : {};
+              if (!v.cliId) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...v, mode: v.mode || "cli", cliId: next }));
+              }
+            } catch {
+              /* ignore */
+            }
+          }
+          return next;
+        });
       })
       .catch(() => setClis([]));
   }, []);

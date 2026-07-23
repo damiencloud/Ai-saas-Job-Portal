@@ -26,6 +26,18 @@ export function GeneratePdfButton({ n, company, pdfReady }: { n: string; company
       </Link>
     );
 
+  if (job?.status === "error") {
+    const errLabel = job.steps?.slice(-1)[0]?.label || "Failed";
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs text-amber-700 dark:text-amber-300 max-sm:min-h-[44px]">
+        <span className="truncate max-w-[160px]">{errLabel}</span>
+        <button onClick={generate} title="Retry PDF generation" className="rounded p-0.5 hover:text-foreground">
+          <RotateCcw className="size-3" />
+        </button>
+      </span>
+    );
+  }
+
   const ready = pdfReady || job?.status === "done";
   if (ready)
     return (

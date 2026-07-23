@@ -58,6 +58,7 @@ export async function POST(req: Request) {
     // Dummy sample profile (reads from config/profile.yml if available)
     const profile = { first_name: "Candidate", email: "candidate@example.com" };
 
+    const runner = new AutonomousRunner();
     const result = await runner.runApplication(
       { company, role, applyUrl, score: score || 4.5, reportNo },
       profile

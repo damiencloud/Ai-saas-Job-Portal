@@ -22,6 +22,7 @@ export const KNOWN: CliSpec[] = [
   { id: "copilot", name: "GitHub Copilot CLI", bin: "copilot", run: "copilot -p", url: "https://docs.github.com/en/copilot/github-copilot-in-the-cli", args: (p) => ["-p", p] },
   { id: "qwen", name: "Qwen CLI", bin: "qwen", run: "qwen -p", url: "https://qwen.ai/qwencode", args: (p) => ["-p", p] },
   { id: "antigravity", name: "Antigravity CLI", bin: "agy", run: "agy -p", url: "https://antigravity.google", args: (p) => ["-p", p] },
+  { id: "openrouter", name: "OpenRouter / Node", bin: "node", run: "node openrouter-runner.mjs", url: "https://openrouter.ai", args: (p) => ["openrouter-runner.mjs", "evaluate", p] },
 ];
 
 function searchDirs(): string[] {
@@ -72,7 +73,7 @@ export function findBin(bin: string, dirs = searchDirs()): string | null {
     for (const candidate of binCandidates(bin)) {
       const p = path.join(dir, candidate);
       try {
-        fs.accessSync(p, fs.constants.X_OK);
+        fs.accessSync(p, process.platform === "win32" ? fs.constants.F_OK : fs.constants.X_OK);
         return p;
       } catch {
         /* not here */

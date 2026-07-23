@@ -15,9 +15,10 @@ type Phase = "input" | "parsing" | "review" | "saving" | "error";
 
 function cliId(): string | null {
   try {
-    return JSON.parse(localStorage.getItem("career-ops:config") || "{}").cliId || null;
+    const raw = localStorage.getItem("career-ops:config");
+    return raw ? JSON.parse(raw).cliId || "openrouter" : "openrouter";
   } catch {
-    return null;
+    return "openrouter";
   }
 }
 

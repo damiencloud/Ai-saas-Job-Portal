@@ -40,9 +40,10 @@ export function useApply(): ApplyCtx {
 const CONFIG_KEY = "career-ops:config";
 function cliId(): string | null {
   try {
-    return JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}").cliId || null;
+    const raw = localStorage.getItem(CONFIG_KEY);
+    return raw ? JSON.parse(raw).cliId || "openrouter" : "openrouter";
   } catch {
-    return null;
+    return "openrouter";
   }
 }
 
